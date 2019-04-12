@@ -71,7 +71,3 @@ Vec3.prototype.min =function()
 	return v.z;
 	}
 }
-
-
-
-	
