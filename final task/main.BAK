@@ -1,0 +1,105 @@
+<html>
+    <head>
+	<title>Final task</title>
+    </head>
+    <body style="margin:0">
+	<script src="three.min.js"></script>
+	<script src="TrackballControls.js"></script>
+	<script src="https://threejs.org/examples/js/math/Lut.js"></script>
+	<script src="https://naohisas.github.io/KVS.js/Build/KVS.min.js"></script>
+	<script src="https://naohisas.github.io/KVS.js/Build/KVS2THREE.min.js"></script>
+	<script src="https://naohisas.github.io/KVS.js/Source/KVSLobsterData.js"></script>
+	<script src="Bounds.js"></script>
+	<script src="Isosurfaces.js"></script>
+	<script src="main.js"></script>
+	 <script type="x-shader/x-fragment" id="Gouraud.frag">
+        varying vec3 point_color;
+        uniform float alpha;
+        void main() {
+            gl_FragColor = vec4( point_color, alpha );
+        } 
+    </script>
+    <script type="x-shader/x-vertex" id="GouraudLambertian.vert">
+        varying vec3 point_color;
+        varying vec4 point_position;
+        varying vec3 normal_vector;
+        uniform vec3 light_position;
+        uniform vec3 uColor;
+        // LambertianReflection function
+        vec3 LambertianReflection( vec3 C, vec3 L, vec3 N ) {
+            float ka = 0.4;
+            float kd = 0.6;
+            
+            float dd = max(dot( N, L ), 0.0 );
+            float Ia = ka;
+            float Id = kd * dd;
+            return C * ( Ia + Id );
+        }
+        void main() {
+            point_position = modelViewMatrix * vec4( position, 1.0 ); 
+            normal_vector = normalMatrix * normal;
+            vec3 C = color;
+            vec3 L = normalize( light_position - point_position.xyz ); 
+            vec3 N = normalize( normal_vector );
+            point_color = LambertianReflection( C, L, N );
+            gl_Position = projectionMatrix * point_position;
+        } 
+    </script>    
+    <script type="x-shader/x-vertex" id="GouraudPhong.vert">
+        varying vec3 point_color;
+        varying vec4 point_position;
+        varying vec3 normal_vector;
+        uniform vec3 light_position;
+        // PhongReflection function here
+        vec3 PhongReflection( vec3 C, vec3 L, vec3 N, vec3 V ) {
+            float ka = 0.3;
+            float kd = 0.5;
+            float ks = 0.8;
+            float n = 50.0;
+            
+            vec3 R = reflect( -L, N );
+            float dd = max( dot( N, L ), 0.0 );
+            float ds = pow( max( dot( R, V ), 0.0 ), n ); 
+            if ( dd <= 0.0 ) { ds = 0.0; }
+            
+            float Ia = ka;
+            float Id = kd * dd;
+            float Is = ks * ds;
+            return C * ( Ia + Id + Is );
+        }
+        
+        void main() {
+            point_position = modelViewMatrix * vec4( position, 1.0 ); 
+            normal_vector = normalMatrix * normal;
+            vec3 C = color;
+            vec3 L = normalize( light_position - point_position.xyz ); 
+            vec3 N = normalize( normal_vector );
+            vec3 V = normalize(cameraPosition - point_position.xyz);
+            point_color = PhongReflection( C, L, N, V );
+            gl_Position = projectionMatrix * point_position;
+        } 
+    </script>
+	<p>
+	<b>
+	<font size="6">情報可視化論最終課題</font><br>
+	提出日 6月18日
+	学籍番号199x108x 氏名 太地 正和<br>
+	</b>
+	<font size="5">仕様</font><br>
+	<font size="3">
+	・dat.GUIを使って、ユーザインターフェースを実装<br>
+	・ユーザインターフェースのColorタブから、ロブスターの色を変化させることができる<br>
+	・Opacityタブから、透明感を変化させることができる<br>
+	・Reflectionタブから、PhongとLambertianを切り替えることができる<br>
+	</font>
+	<font size="5">参考文献</font><br>
+	・http://webhacck.net/archives/1329221.html
+	</p>
+	<script src="dat.gui/dat.gui.js"></script>
+	<script src="dat.gui/dat.gui.min.js"></script>
+	<script>
+	 main();
+	</script>
+	</body>
+    </body>
+</html>
